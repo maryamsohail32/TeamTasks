@@ -1,236 +1,200 @@
-# TeamTasks API
 
-A RESTful task management API built with Laravel 11, demonstrating production-ready patterns including authentication, authorization, queued notifications, and comprehensive testing.
+# 🚀 TeamTasks
 
-## Tech Stack
+[![Laravel](https://img.shields.io/badge/Laravel-11-red?logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3-blue?logo=php)](https://www.php.net/)
+[![Node](https://img.shields.io/badge/Node.js-18-green?logo=node.js)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-username/teamtasks/ci.yml?branch=main)](https://github.com/your-username/teamtasks/actions)
 
-- **Laravel 11** — PHP 8.3
-- **MySQL** — primary database
-- **Redis** — queue driver & caching
-- **Laravel Sanctum** — API token authentication
-- **Laravel Horizon** — queue monitoring
-- **PHPUnit / Pest** — feature & unit testing
+A collaborative task management web application built with **Laravel 11**.  
+Teams can be created, members invited, and tasks tracked across a **Kanban-style board** with role-based access and a modern UI.
 
-## Features
+---
 
-- **Multi-workspace** — users can create and belong to multiple workspaces
-- **Task management** — full CRUD with priority levels and due dates
-- **Team collaboration** — assign tasks to workspace members
-- **Email notifications** — queued email when a task is assigned to you
-- **Policy-based authorization** — users can only access their own data
-- **Versioned API** — all routes under `/api/v1`
-- **API Resources** — consistent, clean JSON responses
-- **Form Request validation** — dedicated validation classes per endpoint
+## ✨ Features
 
-## Architecture
+- 🔐 User authentication (register, login, logout)
+- 👥 Create and manage teams
+- 📧 Invite team members by email
+- ✅ Create tasks with title, description, priority, status, assignee, and due date
+- 📊 Kanban board with To Do / In Progress / Done columns
+- 🔑 Role-based access (owner vs member)
+- ⏰ Overdue task highlighting
+- 🌙 Modern UI with dark sidebar navigation
+
+---
+
+## 🛠 Tech Stack
+
+- **Backend:** PHP 8.3, Laravel 11  
+- **Frontend:** Blade templates, Tailwind CSS, Vite  
+- **Database:** MySQL / MariaDB  
+- **Auth:** Laravel Breeze  
+
+---
+
+## 📋 Requirements
+
+- PHP >= 8.2  
+- Composer  
+- Node.js >= 18 and npm  
+- MySQL or MariaDB  
+- XAMPP (or any local server stack)  
+
+---
+
+## ⚡ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/teamtasks.git
+   cd teamtasks
+   ```
+
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **Install Node dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Set up environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Configure your database in `.env`**
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=teamtasks
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+6. **Create the database**
+   ```sql
+   CREATE DATABASE teamtasks;
+   ```
+
+7. **Run migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+8. **Build frontend assets**
+   ```bash
+   npm run build
+   ```
+
+9. **Start the development server**
+   ```bash
+   php artisan serve
+   ```
+
+Visit 👉 `http://127.0.0.1:8000`
+
+---
+
+## 📚 Database Structure
+
+| Table       | Description                          |
+|-------------|--------------------------------------|
+| `users`     | Registered users                     |
+| `teams`     | Teams created by users               |
+| `team_user` | Pivot table linking users to teams   |
+| `tasks`     | Tasks belonging to teams             |
+| `workspaces`| (Legacy) Workspace groupings         |
+| `cache`     | Laravel cache table                  |
+
+---
+
+## 📂 Project Structure
 
 ```
-HTTP Request
-    │
-    ▼
-Router (/api/v1/...)
-    │
-    ▼
-Middleware (auth:sanctum, throttle)
-    │
-    ▼
-Form Request (validation)
-    │
-    ▼
-Controller (thin — delegates to Service)
-    │
-    ▼
-Service Layer (business logic)
-    │
-    ▼
-Eloquent Model → MySQL
-    │
-    ▼
-API Resource (JSON transformation)
+teamtasks/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── TeamController.php      # Teams CRUD + invite
+│   │   └── TaskController.php      # Tasks CRUD
+│   ├── Models/
+│   │   ├── Team.php
+│   │   ├── Task.php
+│   │   └── User.php
+│   ├── Policies/
+│   │   └── TeamPolicy.php          # Authorization rules
+│   └── Providers/
+│       └── AppServiceProvider.php  # Policy registration
+├── database/
+│   ├── migrations/                 # All database migrations
+│   └── seeders/
+│       └── DatabaseSeeder.php
+├── resources/
+│   └── views/
+│       ├── layouts/
+│       │   └── app.blade.php       # Main layout with sidebar
+│       ├── teams/
+│       │   ├── index.blade.php     # Teams dashboard
+│       │   ├── show.blade.php      # Kanban board
+│       │   └── create.blade.php    # Create team form
+│       └── tasks/
+│           ├── create.blade.php    # Create task form
+│           └── edit.blade.php      # Edit task form
+└── routes/
+    ├── web.php                     # App routes
+    └── auth.php                    # Auth routes
 ```
 
-## Project Structure
+---
 
-```
-app/
-├── Http/
-│   ├── Controllers/Api/V1/
-│   │   ├── AuthController.php
-│   │   ├── WorkspaceController.php
-│   │   └── TaskController.php
-│   ├── Requests/
-│   │   ├── Auth/          (LoginRequest, RegisterRequest)
-│   │   ├── Workspace/     (StoreWorkspaceRequest, UpdateWorkspaceRequest)
-│   │   └── Task/          (StoreTaskRequest, UpdateTaskRequest)
-│   └── Resources/
-│       ├── UserResource.php
-│       ├── Workspace/     (WorkspaceResource, WorkspaceCollection)
-│       └── Task/          (TaskResource, TaskCollection)
-├── Models/
-│   ├── User.php
-│   ├── Workspace.php
-│   └── Task.php
-├── Policies/
-│   ├── WorkspacePolicy.php
-│   └── TaskPolicy.php
-├── Services/
-│   ├── AuthService.php
-│   ├── WorkspaceService.php
-│   └── TaskService.php
-├── Jobs/
-│   └── SendTaskAssignedNotification.php
-└── Notifications/
-    └── TaskAssignedNotification.php
-```
+## 🎯 Usage
 
-## API Endpoints
+- **Creating a team** → Log in → Teams Dashboard → New Team  
+- **Inviting members** → Open team → Team Members → Invite by email  
+- **Managing tasks** → Add Task → Fill details → Appears in Kanban column  
 
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/auth/register` | Register a new user |
-| POST | `/api/v1/auth/login` | Login & get token |
-| POST | `/api/v1/auth/logout` | Revoke current token |
-| GET | `/api/v1/auth/me` | Get authenticated user |
+---
 
-### Workspaces
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/workspaces` | List user's workspaces |
-| POST | `/api/v1/workspaces` | Create a workspace |
-| GET | `/api/v1/workspaces/{id}` | Get a workspace |
-| PUT | `/api/v1/workspaces/{id}` | Update a workspace |
-| DELETE | `/api/v1/workspaces/{id}` | Delete a workspace |
-| POST | `/api/v1/workspaces/{id}/invite` | Invite a member |
+## 👤 Roles
 
-### Tasks
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/workspaces/{id}/tasks` | List workspace tasks |
-| POST | `/api/v1/workspaces/{id}/tasks` | Create a task |
-| GET | `/api/v1/workspaces/{id}/tasks/{taskId}` | Get a task |
-| PUT | `/api/v1/workspaces/{id}/tasks/{taskId}` | Update a task |
-| DELETE | `/api/v1/workspaces/{id}/tasks/{taskId}` | Delete a task |
-| PATCH | `/api/v1/workspaces/{id}/tasks/{taskId}/assign` | Assign task to member |
+| Role   | Permissions                                   |
+|--------|-----------------------------------------------|
+| Owner  | Manage team, tasks, invite members            |
+| Member | View team and manage tasks                    |
 
-## Setup
+---
 
-### Requirements
-- PHP 8.3+
-- MySQL 8+
-- Redis
-- Composer
+## 📝 Notes
 
-### Installation
+- `tasks` table originally had `workspace_id` (legacy).  
+- `team_user` pivot table extended with `role`, timestamps.  
+- Laravel Tinker not installed.  
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/teamtasks.git
-cd teamtasks
+---
 
-# Install dependencies
-composer install
+## 📌 Roadmap
 
-# Copy environment file
-cp .env.example .env
+- Task comments & file attachments  
+- Email & Slack notifications  
+- Activity logs & audit trails  
 
-# Generate application key
-php artisan key:generate
+---
 
-# Configure your .env (DB credentials, Redis, Mail)
+## 📜 License
 
-# Run migrations and seed demo data
-php artisan migrate --seed
+MIT License — free to use and modify.
 
-# Start the queue worker
-php artisan horizon
+---
 
-# Serve the application
-php artisan serve
-```
+## 👩‍💻 Author
 
-### Running Tests
+**Maryam Sohail Ahmed**  
+Built with Laravel · May 2026
 
-```bash
-# Run all tests
-php artisan test
 
-# Run with coverage
-php artisan test --coverage
-```
-
-## Demo Credentials (after seeding)
-
-| Email | Password | Role |
-|-------|----------|------|
-| admin@teamtasks.test | password | Owner of "Acme Corp" workspace |
-| john@teamtasks.test | password | Member of "Acme Corp" workspace |
-| sara@teamtasks.test | password | Member of "Acme Corp" workspace |
-
-## Example Request & Response
-
-**POST** `/api/v1/auth/login`
-
-```json
-// Request
-{
-  "email": "admin@teamtasks.test",
-  "password": "password"
-}
-
-// Response 200
-{
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Admin User",
-      "email": "admin@teamtasks.test"
-    },
-    "token": "1|abc123...",
-    "token_type": "Bearer"
-  }
-}
-```
-
-**POST** `/api/v1/workspaces/1/tasks`
-
-```json
-// Request (Authorization: Bearer {token})
-{
-  "title": "Design the login page",
-  "description": "Create Figma mockups for the auth flow",
-  "priority": "high",
-  "due_date": "2025-02-01",
-  "assigned_to": 2
-}
-
-// Response 201
-{
-  "data": {
-    "id": 1,
-    "title": "Design the login page",
-    "description": "Create Figma mockups for the auth flow",
-    "status": "pending",
-    "priority": "high",
-    "due_date": "2025-02-01",
-    "assigned_to": {
-      "id": 2,
-      "name": "John Doe"
-    },
-    "created_by": {
-      "id": 1,
-      "name": "Admin User"
-    },
-    "created_at": "2025-01-15T10:30:00Z"
-  }
-}
-```
-
-## Key Design Decisions
-
-- **Thin controllers** — controllers only handle HTTP concerns. Business logic lives in Service classes.
-- **Form Requests** — validation is never done in controllers, keeping them clean.
-- **API Resources** — all responses go through Resource transformers; no raw model output.
-- **Policies** — every destructive/sensitive action checks a Policy, not inline `if` statements.
-- **Queued notifications** — email dispatch is always async to keep API responses fast.
-- **Service Layer** — easy to unit test business logic without HTTP overhead.
