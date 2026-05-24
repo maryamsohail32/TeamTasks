@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TeamInviteMail;
 
 class TeamController extends Controller {
     public function index() {
@@ -31,11 +34,12 @@ class TeamController extends Controller {
 
     public function invite(Request $request, Team $team) {
         $this->authorize('update', $team);
-        $data = $request->validate(['email' => 'required|email|exists:users,email']);
-        $user = User::where('email', $data['email'])->first();
+        $data = $request->validate(['email' => 'required|email']);
+        $user = User::FirstOrCreate(['email' => $data['email']], ['name' => 'Pending Invite', 'password' => bcrypt(Str::random(12))]);
         if (!$team->members->contains($user)) {
             $team->members()->attach($user->id, ['role' => 'member']);
         }
+        Mail::to($user->email)->send(new TeamInviteMail($team, $user));
         return back()->with('success', 'Member invited!');
     }
 }

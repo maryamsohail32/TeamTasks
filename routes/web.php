@@ -3,6 +3,8 @@
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
 
 // Redirect root URL to teams index
 Route::get('/', fn() => redirect()->route('teams.index'));
@@ -27,4 +29,15 @@ Route::middleware('auth')->group(function () {
     Route::get('teams/{team}/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::put('teams/{team}/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('teams/{team}/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+
+    Route::get('/send-test', function () {
+    Mail::raw('This is a test email from TeamTasks.', function ($message) {
+        $message->to('bck.14483@gmail.com')
+                ->subject('Mailtrap Test');
+    });
+
+    return 'Test email sent!';
+});
+
 });
